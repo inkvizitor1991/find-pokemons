@@ -53,7 +53,12 @@ def show_all_pokemons(request):
 
 def show_pokemon(request, pokemon_id):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    pokemon_entities = PokemonEntity.objects.all()
+    try:
+        pokemon = Pokemon.objects.get(id=pokemon_id)
+    except Pokemon.DoesNotExist:
+        raise Http404('Покемон не найден.')
+
+    pokemon_entities = pokemon.entities.all()
     for pokemon_entity in pokemon_entities:
         photo = request.build_absolute_uri(
             pokemon_entity.pokemon.photo.url
@@ -63,10 +68,6 @@ def show_pokemon(request, pokemon_id):
             pokemon_entity.lon,
             photo
         )
-    try:
-        pokemon = Pokemon.objects.get(id=pokemon_id)
-    except Pokemon.DoesNotExist:
-        raise Http404('Покемон не найден.')
 
     photo = request.build_absolute_uri(pokemon.photo.url)
     if pokemon.previous_evolution:
